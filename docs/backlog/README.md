@@ -6,6 +6,8 @@
 
 Флоу: skill `run-ticket`. Ветка `kg/{id}`. Новые пачки тикетов (каталог карт, сокеты) нарезает сильная модель пачкой, не субагент «на лету».
 
+Issues на GitHub — одностороннее зеркало файлов (статус по-прежнему только в YAML). [Все тикеты](https://github.com/ndobrynin/mk/issues?q=is%3Aissue+label%3Abacklog), [в работе](https://github.com/ndobrynin/mk/issues?q=is%3Aissue+label%3Astatus%3Ain_progress), [вехи M0–M2](https://github.com/ndobrynin/mk/milestones). Синк: `python3 scripts/backlog-sync-github.py` (и workflow при пуше тикетов).
+
 ## M0 — каркас
 
 | id | title | fast_track |
