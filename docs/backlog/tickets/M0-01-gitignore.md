@@ -1,7 +1,7 @@
 ---
 id: M0-01
 title: Корневой .gitignore
-status: todo
+status: done
 milestone: M0
 blocked_by: []
 unblocks: [M0-02]
