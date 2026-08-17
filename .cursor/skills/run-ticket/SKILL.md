@@ -7,6 +7,20 @@ description: Runs one Kidagrad backlog ticket through architect → developer �
 
 Parent **must not** implement, edit production code, or rewrite the ticket. Dispatch only.
 
+## Models
+
+Pass `model` on every Task launch. Do **not** `inherit` for these three. If a slug is unavailable, stop and name it — do not silently fall back.
+
+| Launch | `model` |
+| --- | --- |
+| architect (plan, not fast-track) | `claude-sonnet-5-thinking-high` |
+| architect (review, always) | `claude-sonnet-5-thinking-high` |
+| developer if `fast_track: true` and `estimate: S` | `composer-2.5-fast` |
+| developer otherwise | `claude-sonnet-5-thinking-high` |
+| tester | `composer-2.5-fast` |
+
+New ticket batches (not this skill): `claude-opus-5-thinking-high`, parent chat, not a subagent.
+
 ## Pick the ticket
 
 - Named id → `docs/backlog/tickets/{id}-*.md`

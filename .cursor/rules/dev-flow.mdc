@@ -10,6 +10,7 @@ alwaysApply: true
 «Возьми задачу» → skill `run-ticket`. Parent не пишет код.
 
 - `fast_track: true` + `S` → без полного плана, сразу developer, потом ревью.
+- Модели (slug в Task): architect и review — `claude-sonnet-5-thinking-high`; tester и fast-track developer — `composer-2.5-fast`; обычный developer — Sonnet. Не inherit. Нарезка пачек — Opus, не субагент.
 - HTTP: supertest / Nest testing, не curl как гейт.
 - План ≤ 40 строк. Файл вне Touches = Fail.
 - Следующий тикет: `python3 scripts/backlog-next.py`
