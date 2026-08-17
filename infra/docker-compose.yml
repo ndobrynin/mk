@@ -1,0 +1,40 @@
+name: kidagrad
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: kidagrad-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kidagrad
+      POSTGRES_USER: kidagrad
+      POSTGRES_PASSWORD: ${KIDAGRAD_POSTGRES_PASSWORD:-kidagrad}
+    ports:
+      - "5435:5432"
+    volumes:
+      - kidagrad_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kidagrad -d kidagrad"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: kidagrad-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - kidagrad_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  kidagrad_pgdata:
+    name: kidagrad_pgdata
+  kidagrad_redis:
+    name: kidagrad_redis

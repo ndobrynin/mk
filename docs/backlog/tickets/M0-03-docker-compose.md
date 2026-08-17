@@ -1,7 +1,7 @@
 ---
 id: M0-03
 title: Docker Compose Postgres 5435 и Redis 6380
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-01]
 unblocks: [M0-04, M1-01]
