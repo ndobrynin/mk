@@ -1,7 +1,7 @@
 ---
 id: M0-02
 title: pnpm workspace
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-01]
 unblocks: [M0-05, M0-06, M0-07, M0-08, M0-09]
