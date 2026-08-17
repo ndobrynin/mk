@@ -1,7 +1,7 @@
 ---
 id: M0-04
 title: .env.example
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-03]
 unblocks: [M0-08, M1-01]
