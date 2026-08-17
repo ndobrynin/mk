@@ -13,6 +13,9 @@
 - [Правила](docs/rules.md) — как играть, фазы хода, каталог карт
 - [Архитектура](docs/architecture.md) — клиент, сервер, движок, платформы
 - [Локальная среда и порты](docs/local-dev.md) — Docker, Postgres, Redis; **не занимать чужие порты**
+- [Бэклог](docs/backlog/README.md) — мелкие тикеты; флоу architect → developer → tester
+
+Следующая задача: `python3 scripts/backlog-next.py`. Ветка `kg/{id}`. Статус только в YAML тикета.
 
 ## Стек
 

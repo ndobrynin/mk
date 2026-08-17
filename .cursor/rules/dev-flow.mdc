@@ -1,0 +1,17 @@
+---
+description: Kidagrad ticket flow. Always apply in this repo.
+alwaysApply: true
+---
+
+# Флоу
+
+Один тикет = `docs/backlog/tickets/{id}-*.md`. Статус **только** в YAML тикета. Ветка `kg/{id}`.
+
+«Возьми задачу» → skill `run-ticket`. Parent не пишет код.
+
+- `fast_track: true` + `S` → без полного плана, сразу developer, потом ревью.
+- HTTP: supertest / Nest testing, не curl как гейт.
+- План ≤ 40 строк. Файл вне Touches = Fail.
+- Следующий тикет: `python3 scripts/backlog-next.py`
+
+Порты: `docs/local-dev.md` (5435 / 6380 / 4010 / 5173).

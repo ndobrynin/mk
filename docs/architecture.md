@@ -232,7 +232,7 @@ React-компоненты: своё поле снизу, соперники п�
 
 ## 13. Этапы работ
 
-0. Монорепо, Docker Postgres/Redis по [local-dev.md](./local-dev.md) (порты 5435 / 6380), CI, пустые `apps/web` и `apps/api`.
+0. Монорепо, Docker Postgres/Redis по [local-dev.md](./local-dev.md) (порты 5435 / 6380), CI, пустые `apps/web` и `apps/api`. Тикеты и флоу: [backlog](./backlog/README.md). Следующая: `python3 scripts/backlog-next.py`.
 1. Auth: почта, VK, Яндекс, identities.
 2. Engine: каталог, FSM, тесты каждой карты из правил.
 3. Комнаты и Socket.IO, reconnection.
