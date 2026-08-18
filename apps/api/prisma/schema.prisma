@@ -15,6 +15,8 @@ model User {
 
   identities    Identity[]
   refreshTokens RefreshToken[]
+  hostedRooms   Room[]
+  roomSeats     RoomSeat[]
 
   @@map("users")
 }
@@ -41,4 +43,33 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id])
 
   @@map("refresh_tokens")
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  hostUserId String
+  maxSeats   Int
+  isPublic   Boolean  @default(false)
+  status     String   @default("waiting")
+  createdAt  DateTime @default(now())
+
+  host  User       @relation(fields: [hostUserId], references: [id])
+  seats RoomSeat[]
+
+  @@map("rooms")
+}
+
+model RoomSeat {
+  id        String @id @default(uuid())
+  roomId    String
+  userId    String
+  seatIndex Int
+
+  room Room @relation(fields: [roomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([roomId, userId])
+  @@unique([roomId, seatIndex])
+  @@map("room_seats")
 }
