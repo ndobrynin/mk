@@ -57,5 +57,8 @@ jobs:
       - name: Test @kidagrad/api
         run: pnpm --filter @kidagrad/api test
 
+      - name: Test @kidagrad/web
+        run: pnpm --filter @kidagrad/web test
+
       - name: Build @kidagrad/web
         run: pnpm --filter @kidagrad/web build

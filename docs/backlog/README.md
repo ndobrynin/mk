@@ -55,8 +55,15 @@ OAuth VK/Yandex — отдельные файлы тикетов после M1-0
 | [M3-01](tickets/M3-01-rooms-rest.md) | REST комнаты: create/join/list/leave |
 | [M3-02](tickets/M3-02-socket-game.md) | Socket.IO: start, apply, Redis snapshot |
 
+## M4 — стол
+
+| id | title |
+| --- | --- |
+| [M4-01](tickets/M4-01-web-auth-lobby.md) | вход и лобби комнат |
+| [M4-02](tickets/M4-02-web-table.md) | стол, магазин, партия по сокету |
+
 ## Позже
 
-M4 стол · M5 боты · M6 VK/Яндекс · M7 таймеры. Не брать без файла тикета.
+M5 боты · M6 VK/Яндекс · M7 таймеры. Не брать без файла тикета.
 
 Новый тикет = `TEMPLATE.md`. `S` = одна ветка, один набор тестов.
