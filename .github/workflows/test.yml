@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://kidagrad:kidagrad@127.0.0.1:5435/kidagrad
+      REDIS_URL: redis://127.0.0.1:6380
     services:
       postgres:
         image: postgres:16
@@ -22,6 +23,15 @@ jobs:
           - 5435:5432
         options: >-
           --health-cmd "pg_isready -U kidagrad -d kidagrad"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
