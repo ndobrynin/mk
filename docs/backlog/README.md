@@ -45,9 +45,7 @@ OAuth VK/Yandex — отдельные файлы тикетов после M1-0
 | [M2-01](tickets/M2-01-engine-types.md) | типы + `apply` stub + CONTRACT |
 | [M2-02](tickets/M2-02-setup-two-players.md) | `setup()` на 2–4 игроков |
 | [M2-03](tickets/M2-03-roll-one-die.md) | `roll` — один кубик |
-| [M2-04](tickets/M2-04-income-wheat-bakery.md) | доход: поле и пекарня |
-| [M2-05](tickets/M2-05-red-before-blue.md) | красные раньше синих |
-| [M2-06](tickets/M2-06-build-pass.md) | `passBuild` |
+| [M2-04](tickets/M2-04-income-wheat-bakery.md) | доход wheat/bakery/cafe + `passBuild` |
 
 Дальше — по одному эффекту карты на тикет.
 

@@ -13,6 +13,12 @@ export type Player = {
   landmarks: Landmark[];
 };
 
+type InternalState = GameState & {
+  activeIndex: number;
+  players: Player[];
+  lastRoll?: { dice: number[] };
+};
+
 const LANDMARK_IDS = [
   'harbor',
   'station',
@@ -45,7 +51,7 @@ export function setup(playerIds: string[]): GameState {
 
   const players: Player[] = playerIds.map((id) => createPlayer(id));
 
-  const state: GameState & { activeIndex: number } = {
+  const state: InternalState = {
     version: 1,
     phase: 'rolling',
     activeIndex: 0,
@@ -55,16 +61,76 @@ export function setup(playerIds: string[]): GameState {
   return state;
 }
 
+function countEstablishment(player: Player, id: string): number {
+  return player.establishments.filter((establishment) => establishment === id).length;
+}
+
+/**
+ * Order to collect from for red-card income: starting from the player right
+ * before the active player (going backwards around the table), excluding
+ * the active player itself.
+ */
+function counterclockwiseOrder(activeIndex: number, playerCount: number): number[] {
+  const order: number[] = [];
+  for (let step = 1; step < playerCount; step += 1) {
+    order.push((activeIndex - step + playerCount) % playerCount);
+  }
+  return order;
+}
+
+function applyCafeIncome(players: Player[], activeIndex: number): void {
+  const active = players[activeIndex];
+  const order = counterclockwiseOrder(activeIndex, players.length);
+
+  for (const ownerIndex of order) {
+    const owner = players[ownerIndex];
+    const copies = countEstablishment(owner, 'cafe');
+    if (copies === 0) continue;
+
+    const amount = copies;
+    const paid = Math.min(active.coins, amount);
+    active.coins -= paid;
+    owner.coins += paid;
+  }
+}
+
+function applyWheatFieldIncome(players: Player[]): void {
+  for (const player of players) {
+    const copies = countEstablishment(player, 'wheat-field');
+    if (copies > 0) player.coins += copies;
+  }
+}
+
+function applyBakeryIncome(active: Player): void {
+  const copies = countEstablishment(active, 'bakery');
+  if (copies > 0) active.coins += copies;
+}
+
 export function apply(
   state: GameState,
   command: Command,
   rng: Rng,
 ): { ok: true; state: GameState; events: unknown[] } | { ok: false; error: string } {
-  if (command.type === 'roll' && state.phase === 'rolling') {
+  const current = state as InternalState;
+
+  if (command.type === 'roll' && current.phase === 'rolling') {
     const n = rng.nextInt(6) + 1;
-    const nextState: GameState & { lastRoll: { dice: number[] } } = {
-      ...state,
-      phase: 'income',
+    const players: Player[] = current.players.map((player) => ({ ...player }));
+
+    if (n === 3) {
+      applyCafeIncome(players, current.activeIndex);
+    }
+    if (n === 1) {
+      applyWheatFieldIncome(players);
+    }
+    if (n === 2 || n === 3) {
+      applyBakeryIncome(players[current.activeIndex]);
+    }
+
+    const nextState: InternalState = {
+      ...current,
+      players,
+      phase: 'build',
       lastRoll: { dice: [n] },
     };
 
@@ -75,5 +141,27 @@ export function apply(
     };
   }
 
-  return { ok: false, error: 'not implemented' };
+  if (command.type === 'passBuild' && current.phase === 'build') {
+    const playerCount = current.players.length;
+    const previousPlayer = current.players[current.activeIndex];
+    const nextActiveIndex = (current.activeIndex + 1) % playerCount;
+    const nextPlayer = current.players[nextActiveIndex];
+
+    const nextState: InternalState = {
+      ...current,
+      phase: 'rolling',
+      activeIndex: nextActiveIndex,
+    };
+
+    return {
+      ok: true,
+      state: nextState,
+      events: [
+        { type: 'turnEnded', playerId: previousPlayer.id },
+        { type: 'turnStarted', playerId: nextPlayer.id },
+      ],
+    };
+  }
+
+  return { ok: false, error: `cannot apply "${command.type}" in phase "${current.phase}"` };
 }

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "phase": "rolling",
+  "activeIndex": 0,
+  "players": [
+    {
+      "id": "a",
+      "coins": 1,
+      "establishments": ["wheat-field", "bakery"],
+      "landmarks": [
+        { "id": "harbor", "constructed": false },
+        { "id": "station", "constructed": false },
+        { "id": "mall", "constructed": false },
+        { "id": "tv-tower", "constructed": false },
+        { "id": "amusement-park", "constructed": false },
+        { "id": "aqua-park", "constructed": false },
+        { "id": "airport", "constructed": false },
+        { "id": "bank", "constructed": false },
+        { "id": "city-hall", "constructed": false }
+      ]
+    },
+    {
+      "id": "b",
+      "coins": 3,
+      "establishments": ["cafe"],
+      "landmarks": [
+        { "id": "harbor", "constructed": false },
+        { "id": "station", "constructed": false },
+        { "id": "mall", "constructed": false },
+        { "id": "tv-tower", "constructed": false },
+        { "id": "amusement-park", "constructed": false },
+        { "id": "aqua-park", "constructed": false },
+        { "id": "airport", "constructed": false },
+        { "id": "bank", "constructed": false },
+        { "id": "city-hall", "constructed": false }
+      ]
+    }
+  ]
+}
