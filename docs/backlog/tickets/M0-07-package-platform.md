@@ -1,7 +1,7 @@
 ---
 id: M0-07
 title: packages/platform заглушка
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-02]
 unblocks: [M0-09]

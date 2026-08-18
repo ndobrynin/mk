@@ -6,6 +6,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "echo skip"
+    "test": "echo skip",
+    "dev:api": "pnpm --filter @kidagrad/api dev",
+    "dev:web": "pnpm --filter @kidagrad/web dev",
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infra/docker-compose.yml down"
   }
 }
