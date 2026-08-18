@@ -1,7 +1,7 @@
 ---
 id: M2-02
 title: setup() на двух игроков
-status: todo
+status: done
 milestone: M2
 blocked_by: [M2-01]
 unblocks: [M2-03]

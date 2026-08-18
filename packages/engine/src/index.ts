@@ -4,6 +4,53 @@ export type GameState = { version: 1; phase: string; players: unknown[] };
 
 export type Rng = { nextInt(maxExclusive: number): number };
 
+export type Landmark = { id: string; constructed: boolean };
+
+export type Player = {
+  id: string;
+  coins: number;
+  establishments: string[];
+  landmarks: Landmark[];
+};
+
+const LANDMARK_IDS = [
+  'harbor',
+  'station',
+  'mall',
+  'tv-tower',
+  'amusement-park',
+  'aqua-park',
+  'airport',
+  'bank',
+  'city-hall',
+] as const;
+
+function createLandmarks(): Landmark[] {
+  return LANDMARK_IDS.map((id) => ({ id, constructed: false }));
+}
+
+function createPlayer(id: string): Player {
+  return {
+    id,
+    coins: 3,
+    establishments: ['wheat-field', 'bakery'],
+    landmarks: createLandmarks(),
+  };
+}
+
+export function setup(playerIds: [string, string]): GameState {
+  const players: Player[] = playerIds.map((id) => createPlayer(id));
+
+  const state: GameState & { activeIndex: number } = {
+    version: 1,
+    phase: 'rolling',
+    activeIndex: 0,
+    players,
+  };
+
+  return state;
+}
+
 export function apply(
   state: GameState,
   command: Command,
