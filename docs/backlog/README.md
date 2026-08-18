@@ -48,8 +48,15 @@ OAuth VK/Yandex — отдельные файлы тикетов после M1-0
 | [M2-04](tickets/M2-04-income-wheat-bakery.md) | доход wheat/bakery/cafe + `passBuild` |
 | [M2-05](tickets/M2-05-full-engine.md) | полный движок: каталог, ход, все карты |
 
+## M3 — комнаты
+
+| id | title |
+| --- | --- |
+| [M3-01](tickets/M3-01-rooms-rest.md) | REST комнаты: create/join/list/leave |
+| [M3-02](tickets/M3-02-socket-game.md) | Socket.IO: start, apply, Redis snapshot |
+
 ## Позже
 
-M3 комнаты · M4 стол · M5 боты · M6 VK/Яндекс · M7 таймеры. Не брать без файла тикета.
+M4 стол · M5 боты · M6 VK/Яндекс · M7 таймеры. Не брать без файла тикета.
 
 Новый тикет = `TEMPLATE.md`. `S` = одна ветка, один набор тестов.

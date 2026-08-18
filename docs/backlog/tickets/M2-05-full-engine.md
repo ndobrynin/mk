@@ -4,7 +4,7 @@ title: Полный движок — каталог, ход, все карты
 status: done
 milestone: M2
 blocked_by: [M2-04]
-unblocks: []
+unblocks: [M3-01]
 estimate: L
 fast_track: false
 min_tests: 40
