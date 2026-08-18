@@ -1,7 +1,7 @@
 ---
 id: M2-01
 title: Типы движка и apply stub
-status: todo
+status: done
 milestone: M2
 blocked_by: [M0-06]
 unblocks: [M2-02]
