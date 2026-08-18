@@ -1,18 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { apply, setup, type GameState, type Player, type Rng } from './index.js';
+import { apply, setup, type Command, type GameState, type Player, type Rng } from './index.js';
 
 describe('@kidagrad/engine', () => {
   it('exports apply', () => {
     expect(typeof apply).toBe('function');
   });
 
-  it('apply returns not implemented for any command', () => {
+  it('apply returns not implemented for passBuild', () => {
     const state: GameState = { version: 1, phase: 'rolling', players: [] };
     const rng: Rng = { nextInt: () => 0 };
 
-    const result = apply(state, { type: 'roll' }, rng);
+    const result = apply(state, { type: 'passBuild' }, rng);
 
     expect(result).toEqual({ ok: false, error: 'not implemented' });
+  });
+
+  it('apply rolls one die from rolling phase, using rng and ignoring extra command fields', () => {
+    const state = setup(['a', 'b']);
+    const rng: Rng = { nextInt: () => 0 };
+
+    const result = apply(state, { type: 'roll', value: 6 } as Command, rng);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.events).toEqual([{ type: 'diceRolled', dice: [1] }]);
+    expect((result.state as GameState & { lastRoll: { dice: number[] } }).lastRoll).toEqual({
+      dice: [1],
+    });
+    expect(result.state.phase).toBe('income');
   });
 
   it('setup creates two players with 3 coins each, no RNG involved', () => {
