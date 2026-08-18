@@ -9,6 +9,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://kidagrad:kidagrad@127.0.0.1:5435/kidagrad
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: kidagrad
+          POSTGRES_PASSWORD: kidagrad
+          POSTGRES_DB: kidagrad
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd "pg_isready -U kidagrad -d kidagrad"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +40,9 @@ jobs:
 
       - name: Test @kidagrad/engine
         run: pnpm --filter @kidagrad/engine test
+
+      - name: Migrate @kidagrad/api
+        run: pnpm --filter @kidagrad/api exec prisma migrate deploy
 
       - name: Test @kidagrad/api
         run: pnpm --filter @kidagrad/api test

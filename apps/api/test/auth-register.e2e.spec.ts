@@ -11,7 +11,7 @@ function uniqueEmail(label: string): string {
 }
 
 describe('POST /auth/register', () => {
-  let app: INestApplication;
+  let app: INestApplication | undefined;
   let prisma: PrismaService;
 
   beforeAll(async () => {
@@ -25,13 +25,13 @@ describe('POST /auth/register', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   it('returns 201 with { id, email } and no passwordHash', async () => {
     const email = uniqueEmail('register');
 
-    const response = await request(app.getHttpServer())
+    const response = await request(app!.getHttpServer())
       .post('/auth/register')
       .send({ email, password: 'a-strong-password' });
 
@@ -45,7 +45,7 @@ describe('POST /auth/register', () => {
     const email = uniqueEmail('hash-check');
     const password = 'a-strong-password';
 
-    const response = await request(app.getHttpServer())
+    const response = await request(app!.getHttpServer())
       .post('/auth/register')
       .send({ email, password });
 
@@ -58,12 +58,12 @@ describe('POST /auth/register', () => {
   it('returns 409 when the email is already registered', async () => {
     const email = uniqueEmail('duplicate');
 
-    await request(app.getHttpServer())
+    await request(app!.getHttpServer())
       .post('/auth/register')
       .send({ email, password: 'a-strong-password' })
       .expect(201);
 
-    const response = await request(app.getHttpServer())
+    const response = await request(app!.getHttpServer())
       .post('/auth/register')
       .send({ email, password: 'another-password' });
 
@@ -73,7 +73,7 @@ describe('POST /auth/register', () => {
   it('returns 400 when the password is shorter than 8 characters', async () => {
     const email = uniqueEmail('short-password');
 
-    const response = await request(app.getHttpServer())
+    const response = await request(app!.getHttpServer())
       .post('/auth/register')
       .send({ email, password: 'short' });
 

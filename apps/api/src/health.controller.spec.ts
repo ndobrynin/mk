@@ -3,14 +3,14 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { AppModule } from './app.module.js';
+import { HealthController } from './health.controller.js';
 
 describe('GET /health', () => {
-  let app: INestApplication;
+  let app: INestApplication | undefined;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      controllers: [HealthController],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -18,11 +18,11 @@ describe('GET /health', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   it('returns { ok: true }', async () => {
-    const response = await request(app.getHttpServer()).get('/health');
+    const response = await request(app!.getHttpServer()).get('/health');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
   });
