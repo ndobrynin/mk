@@ -60,5 +60,20 @@ export function apply(
   command: Command,
   rng: Rng,
 ): { ok: true; state: GameState; events: unknown[] } | { ok: false; error: string } {
+  if (command.type === 'roll' && state.phase === 'rolling') {
+    const n = rng.nextInt(6) + 1;
+    const nextState: GameState & { lastRoll: { dice: number[] } } = {
+      ...state,
+      phase: 'income',
+      lastRoll: { dice: [n] },
+    };
+
+    return {
+      ok: true,
+      state: nextState,
+      events: [{ type: 'diceRolled', dice: [n] }],
+    };
+  }
+
   return { ok: false, error: 'not implemented' };
 }

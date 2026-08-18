@@ -1,7 +1,7 @@
 ---
 id: M2-03
 title: Команда roll — один кубик
-status: todo
+status: done
 milestone: M2
 blocked_by: [M2-02]
 unblocks: [M2-04]
