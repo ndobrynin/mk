@@ -4,7 +4,7 @@ title: Доход wheat/bakery/cafe и passBuild
 status: done
 milestone: M2
 blocked_by: [M2-03]
-unblocks: []
+unblocks: [M2-05]
 estimate: M
 fast_track: false
 min_tests: 7

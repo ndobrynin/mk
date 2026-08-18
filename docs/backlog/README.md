@@ -46,8 +46,7 @@ OAuth VK/Yandex — отдельные файлы тикетов после M1-0
 | [M2-02](tickets/M2-02-setup-two-players.md) | `setup()` на 2–4 игроков |
 | [M2-03](tickets/M2-03-roll-one-die.md) | `roll` — один кубик |
 | [M2-04](tickets/M2-04-income-wheat-bakery.md) | доход wheat/bakery/cafe + `passBuild` |
-
-Дальше — по одному эффекту карты на тикет.
+| [M2-05](tickets/M2-05-full-engine.md) | полный движок: каталог, ход, все карты |
 
 ## Позже
 
