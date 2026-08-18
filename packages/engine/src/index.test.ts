@@ -57,4 +57,46 @@ describe('@kidagrad/engine', () => {
       expect(player.landmarks.every((l) => l.constructed === false)).toBe(true);
     }
   });
+
+  it('setup creates three players, each with 3 coins, establishments, and 9 landmarks', () => {
+    const state = setup(['p1', 'p2', 'p3']);
+
+    expect(state.players).toHaveLength(3);
+
+    const players = state.players as Player[];
+    expect(players.map((p) => p.id)).toEqual(['p1', 'p2', 'p3']);
+    for (const player of players) {
+      expect(player.coins).toBe(3);
+      expect(player.establishments).toEqual(['wheat-field', 'bakery']);
+      expect(player.landmarks).toHaveLength(9);
+      expect(player.landmarks.every((l) => l.constructed === false)).toBe(true);
+    }
+  });
+
+  it('setup creates four players, each with 3 coins, establishments, and 9 landmarks', () => {
+    const state = setup(['p1', 'p2', 'p3', 'p4']);
+
+    expect(state.players).toHaveLength(4);
+
+    const players = state.players as Player[];
+    expect(players.map((p) => p.id)).toEqual(['p1', 'p2', 'p3', 'p4']);
+    for (const player of players) {
+      expect(player.coins).toBe(3);
+      expect(player.establishments).toEqual(['wheat-field', 'bakery']);
+      expect(player.landmarks).toHaveLength(9);
+      expect(player.landmarks.every((l) => l.constructed === false)).toBe(true);
+    }
+  });
+
+  it('setup throws for 0 playerIds', () => {
+    expect(() => setup([])).toThrow();
+  });
+
+  it('setup throws for 1 playerId', () => {
+    expect(() => setup(['p1'])).toThrow();
+  });
+
+  it('setup throws for 5 playerIds', () => {
+    expect(() => setup(['p1', 'p2', 'p3', 'p4', 'p5'])).toThrow();
+  });
 });

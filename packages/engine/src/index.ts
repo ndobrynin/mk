@@ -38,7 +38,11 @@ function createPlayer(id: string): Player {
   };
 }
 
-export function setup(playerIds: [string, string]): GameState {
+export function setup(playerIds: string[]): GameState {
+  if (playerIds.length < 2 || playerIds.length > 4) {
+    throw new Error('setup requires 2, 3, or 4 playerIds');
+  }
+
   const players: Player[] = playerIds.map((id) => createPlayer(id));
 
   const state: GameState & { activeIndex: number } = {
