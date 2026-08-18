@@ -1,7 +1,7 @@
 ---
 id: M0-08
 title: Nest API слушает 4010
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-02, M0-04, M0-05]
 unblocks: [M0-10, M1-01]

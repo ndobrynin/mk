@@ -1,7 +1,7 @@
 ---
 id: M0-09
 title: Vite React на 5173
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-02, M0-04]
 unblocks: [M0-10]

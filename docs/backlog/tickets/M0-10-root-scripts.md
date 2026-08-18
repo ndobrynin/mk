@@ -1,7 +1,7 @@
 ---
 id: M0-10
 title: Скрипты корня и how-to-run в README
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-03, M0-08, M0-09]
 unblocks: [M0-11]

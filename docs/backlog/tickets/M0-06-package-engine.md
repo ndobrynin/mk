@@ -1,7 +1,7 @@
 ---
 id: M0-06
 title: packages/engine заглушка и один тест
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-02, M0-05]
 unblocks: [M2-01]

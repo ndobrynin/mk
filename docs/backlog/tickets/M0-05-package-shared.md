@@ -1,7 +1,7 @@
 ---
 id: M0-05
 title: packages/shared заглушка
-status: todo
+status: done
 milestone: M0
 blocked_by: [M0-02]
 unblocks: [M0-06, M0-08, M0-09]
