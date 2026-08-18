@@ -27,7 +27,7 @@ describe('POST /auth/login', () => {
     await app?.close();
   });
 
-  it('returns a JWT accessToken after register then login', async () => {
+  it('returns a JWT accessToken and a refreshToken after register then login', async () => {
     const email = uniqueEmail('login-ok');
     const password = 'a-strong-password';
 
@@ -43,6 +43,8 @@ describe('POST /auth/login', () => {
     expect(response.status).toBe(200);
     expect(typeof response.body.accessToken).toBe('string');
     expect(response.body.accessToken.split('.').length).toBe(3);
+    expect(typeof response.body.refreshToken).toBe('string');
+    expect(response.body.refreshToken.length).toBeGreaterThan(0);
   });
 
   it('returns 401 with the wrong password', async () => {
