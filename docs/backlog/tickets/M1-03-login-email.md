@@ -1,7 +1,7 @@
 ---
 id: M1-03
 title: POST /auth/login
-status: todo
+status: done
 milestone: M1
 blocked_by: [M1-02]
 unblocks: [M1-04]

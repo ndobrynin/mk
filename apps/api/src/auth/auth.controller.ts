@@ -1,7 +1,12 @@
 import { Body, Controller, HttpCode, HttpStatus, Inject, Post } from '@nestjs/common';
-import { AuthService, RegisteredUser } from './auth.service.js';
+import { AuthService, LoginResult, RegisteredUser } from './auth.service.js';
 
 interface RegisterBody {
+  email: unknown;
+  password: unknown;
+}
+
+interface LoginBody {
   email: unknown;
   password: unknown;
 }
@@ -14,5 +19,11 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   register(@Body() body: RegisterBody): Promise<RegisteredUser> {
     return this.authService.register(body.email, body.password);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  login(@Body() body: LoginBody): Promise<LoginResult> {
+    return this.authService.login(body.email, body.password);
   }
 }
