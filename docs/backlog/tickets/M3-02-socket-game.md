@@ -4,7 +4,7 @@ title: Socket.IO лобби, start и apply
 status: done
 milestone: M3
 blocked_by: [M3-01]
-unblocks: []
+unblocks: [M4-02]
 estimate: L
 fast_track: false
 min_tests: 3
