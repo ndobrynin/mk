@@ -1,7 +1,7 @@
 ---
 id: M1-01
 title: Prisma schema users и identities
-status: todo
+status: done
 milestone: M1
 blocked_by: [M0-03, M0-04, M0-08]
 unblocks: [M1-02]
