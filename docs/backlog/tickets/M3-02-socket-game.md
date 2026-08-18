@@ -1,7 +1,7 @@
 ---
 id: M3-02
 title: Socket.IO лобби, start и apply
-status: todo
+status: done
 milestone: M3
 blocked_by: [M3-01]
 unblocks: []
