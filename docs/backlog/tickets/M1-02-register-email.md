@@ -1,7 +1,7 @@
 ---
 id: M1-02
 title: POST /auth/register почта
-status: todo
+status: done
 milestone: M1
 blocked_by: [M1-01]
 unblocks: [M1-03]
