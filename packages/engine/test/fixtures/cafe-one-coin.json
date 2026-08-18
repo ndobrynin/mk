@@ -2,11 +2,12 @@
   "version": 1,
   "phase": "rolling",
   "activeIndex": 0,
+  "market": {},
   "players": [
     {
       "id": "a",
       "coins": 1,
-      "establishments": ["wheat-field", "bakery"],
+      "establishments": [{ "id": "wheat-field" }, { "id": "bakery" }],
       "landmarks": [
         { "id": "harbor", "constructed": false },
         { "id": "station", "constructed": false },
@@ -22,7 +23,7 @@
     {
       "id": "b",
       "coins": 3,
-      "establishments": ["cafe"],
+      "establishments": [{ "id": "cafe" }],
       "landmarks": [
         { "id": "harbor", "constructed": false },
         { "id": "station", "constructed": false },
