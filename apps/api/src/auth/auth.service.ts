@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -8,15 +9,25 @@ const MIN_PASSWORD_LENGTH = 8;
 const BCRYPT_SALT_ROUNDS = 10;
 const PRISMA_UNIQUE_CONSTRAINT_ERROR = 'P2002';
 const ACCESS_TOKEN_TTL = '15m';
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const REFRESH_TOKEN_BYTES = 32;
 const INVALID_CREDENTIALS_MESSAGE = 'invalid email or password';
+const INVALID_REFRESH_TOKEN_MESSAGE = 'invalid refresh token';
 
-export interface RegisteredUser {
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface RegisteredUser extends TokenPair {
   id: string;
   email: string;
 }
 
-export interface LoginResult {
-  accessToken: string;
+export type LoginResult = TokenPair;
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 @Injectable()
@@ -42,7 +53,9 @@ export class AuthService {
         select: { id: true, email: true },
       });
 
-      return { id: user.id, email: user.email as string };
+      const tokenPair = await this.issueTokenPair(user.id, user.email);
+
+      return { id: user.id, email: user.email as string, ...tokenPair };
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -76,16 +89,54 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
+    return this.issueTokenPair(user.id, user.email);
+  }
+
+  async refresh(refreshToken: unknown): Promise<LoginResult> {
+    if (typeof refreshToken !== 'string' || refreshToken.length === 0) {
+      throw new UnauthorizedException(INVALID_REFRESH_TOKEN_MESSAGE);
+    }
+
+    const tokenHash = hashToken(refreshToken);
+    const stored = await this.prisma.refreshToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    if (!stored) {
+      throw new UnauthorizedException(INVALID_REFRESH_TOKEN_MESSAGE);
+    }
+
+    await this.prisma.refreshToken.delete({ where: { id: stored.id } });
+
+    if (stored.expiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedException(INVALID_REFRESH_TOKEN_MESSAGE);
+    }
+
+    return this.issueTokenPair(stored.userId, stored.user.email);
+  }
+
+  private async issueTokenPair(userId: string, email: string | null): Promise<TokenPair> {
     const jwtSecret = process.env.JWT_SECRET;
 
     if (!jwtSecret) {
       throw new Error('JWT_SECRET is not configured');
     }
 
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, jwtSecret, {
+    const accessToken = jwt.sign({ sub: userId, email, jti: randomUUID() }, jwtSecret, {
       expiresIn: ACCESS_TOKEN_TTL,
     });
 
-    return { accessToken };
+    const refreshToken = randomBytes(REFRESH_TOKEN_BYTES).toString('hex');
+
+    await this.prisma.refreshToken.create({
+      data: {
+        userId,
+        tokenHash: hashToken(refreshToken),
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+      },
+    });
+
+    return { accessToken, refreshToken };
   }
 }

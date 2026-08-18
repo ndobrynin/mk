@@ -1,7 +1,7 @@
 ---
 id: M1-04
 title: Refresh JWT
-status: todo
+status: done
 milestone: M1
 blocked_by: [M1-03]
 unblocks: [M1-05]

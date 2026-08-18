@@ -11,6 +11,10 @@ interface LoginBody {
   password: unknown;
 }
 
+interface RefreshBody {
+  refreshToken: unknown;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(@Inject(AuthService) private readonly authService: AuthService) {}
@@ -25,5 +29,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() body: LoginBody): Promise<LoginResult> {
     return this.authService.login(body.email, body.password);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  refresh(@Body() body: RefreshBody): Promise<LoginResult> {
+    return this.authService.refresh(body.refreshToken);
   }
 }

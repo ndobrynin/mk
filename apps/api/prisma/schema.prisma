@@ -13,7 +13,8 @@ model User {
   passwordHash String?
   createdAt    DateTime @default(now())
 
-  identities Identity[]
+  identities    Identity[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -28,4 +29,16 @@ model Identity {
 
   @@unique([provider, providerId])
   @@map("identities")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
 }
