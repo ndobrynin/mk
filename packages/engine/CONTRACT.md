@@ -88,3 +88,22 @@ per-card functions. `cost: null` on a catalog entry means the cost was not yet t
 the Figma card visuals — `buildEstablishment` / `buildLandmark` reject such ids with
 `{ ok: false }` rather than guessing a price. See `docs/rules.md` for the cost table and
 provenance notes.
+
+## Bot policy (M5-01)
+
+`chooseBotCommand(state, playerId): Command` returns one command for the active player's current
+phase such that `apply(state, command, rng)` yields `{ ok: true }`. The frozen `apply` signature
+above is unchanged.
+
+v1 is a heuristic (not ML), using only legal commands (optional helper: probe `apply` with a stub
+rng):
+
+- `rolling` → `{ type: 'roll' }` only (never `chooseDiceCount`).
+- `decideReroll` → `keepRoll`.
+- `decideHarbor` → `harborSkip`.
+- pick* / `endOfTurn` → first legal command.
+- `build`: a landmark if it is affordable (`cost !== null`) and the city already feeds
+  (`city-hall` constructed, or `establishments.length > 2`); otherwise the market establishment
+  with maximum EV/cost using 1d6 activation probabilities (`cost: null` skipped); otherwise
+  `passBuild`.
+
