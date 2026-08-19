@@ -1119,3 +1119,5 @@ function handleEndOfTurn(current: InternalState, command: Command): ApplyResult 
 
   return { ok: false, error: `cannot apply "${command.type}" in phase "${current.phase}"` };
 }
+
+export { chooseBotCommand } from './bot.js';
