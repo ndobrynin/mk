@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { GameTablePage } from "./pages/GameTablePage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { RoomLobbyPage } from "./pages/RoomLobbyPage";
@@ -25,6 +26,14 @@ function App(): ReactElement {
         element={
           <ProtectedRoute>
             <RoomLobbyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rooms/:roomId/table"
+        element={
+          <ProtectedRoute>
+            <GameTablePage />
           </ProtectedRoute>
         }
       />
