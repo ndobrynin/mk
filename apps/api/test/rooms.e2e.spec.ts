@@ -55,7 +55,7 @@ describe('rooms REST', () => {
     expect(createResponse.body.code.length).toBe(6);
     expect(createResponse.body.status).toBe('waiting');
     expect(createResponse.body.seats).toEqual([
-      { userId: expect.any(String), seatIndex: 0 },
+      { userId: expect.any(String), seatIndex: 0, isBot: false },
     ]);
 
     const listResponse = await request(app!.getHttpServer())
@@ -91,7 +91,7 @@ describe('rooms REST', () => {
 
     expect(joinByIdResponse.body.seats).toHaveLength(2);
     expect(joinByIdResponse.body.seats).toEqual(
-      expect.arrayContaining([{ userId: expect.any(String), seatIndex: 1 }]),
+      expect.arrayContaining([{ userId: expect.any(String), seatIndex: 1, isBot: false }]),
     );
 
     const joinByCodeResponse = await request(app!.getHttpServer())
@@ -102,7 +102,7 @@ describe('rooms REST', () => {
 
     expect(joinByCodeResponse.body.seats).toHaveLength(3);
     expect(joinByCodeResponse.body.seats).toEqual(
-      expect.arrayContaining([{ userId: expect.any(String), seatIndex: 2 }]),
+      expect.arrayContaining([{ userId: expect.any(String), seatIndex: 2, isBot: false }]),
     );
 
     const getResponse = await request(app!.getHttpServer())
@@ -182,5 +182,54 @@ describe('rooms REST', () => {
       .expect(200);
 
     expect(getResponse.body.status).toBe('finished');
+  });
+
+  it('lets the host add a bot onto a free seat and marks isBot', async () => {
+    const hostToken = await registerAndLogin('rooms-add-bot-host');
+    const guestToken = await registerAndLogin('rooms-add-bot-guest');
+
+    const createResponse = await request(app!.getHttpServer())
+      .post('/rooms')
+      .set('Authorization', `Bearer ${hostToken}`)
+      .send({ maxSeats: 3, isPublic: false })
+      .expect(201);
+
+    const roomId = createResponse.body.id as string;
+
+    const addBotResponse = await request(app!.getHttpServer())
+      .post(`/rooms/${roomId}/bots`)
+      .set('Authorization', `Bearer ${hostToken}`)
+      .expect(201);
+
+    expect(addBotResponse.body.seats).toHaveLength(2);
+    expect(addBotResponse.body.seats).toEqual(
+      expect.arrayContaining([
+        { userId: expect.any(String), seatIndex: 0, isBot: false },
+        { userId: expect.any(String), seatIndex: 1, isBot: true },
+      ]),
+    );
+
+    await request(app!.getHttpServer())
+      .post(`/rooms/${roomId}/bots`)
+      .set('Authorization', `Bearer ${guestToken}`)
+      .expect(403);
+  });
+
+  it('fills empty seats with bots when fillBots is true on create', async () => {
+    const hostToken = await registerAndLogin('rooms-fill-bots-host');
+
+    const createResponse = await request(app!.getHttpServer())
+      .post('/rooms')
+      .set('Authorization', `Bearer ${hostToken}`)
+      .send({ maxSeats: 2, isPublic: false, fillBots: true })
+      .expect(201);
+
+    expect(createResponse.body.seats).toHaveLength(2);
+    expect(createResponse.body.seats).toEqual(
+      expect.arrayContaining([
+        { userId: expect.any(String), seatIndex: 0, isBot: false },
+        { userId: expect.any(String), seatIndex: 1, isBot: true },
+      ]),
+    );
   });
 });

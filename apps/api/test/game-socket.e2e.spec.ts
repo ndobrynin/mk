@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module.js';
 
 process.env.JWT_SECRET ??= 'change-me';
+process.env.BOT_MOVE_DELAY_MS ??= '0';
 
 const EVENT_TIMEOUT_MS = 5000;
 
@@ -32,6 +33,7 @@ interface GamePlayer {
 }
 
 interface GameSnapshot {
+  phase: string;
   activeIndex: number;
   players: GamePlayer[];
   lastRoll?: { dice: number[] };
@@ -47,6 +49,30 @@ function waitForEvent<T>(socket: Socket, event: string): Promise<T> {
       clearTimeout(timer);
       resolve(payload);
     });
+  });
+}
+
+function waitForMatchingSnapshot(
+  socket: Socket,
+  predicate: (snapshot: GameSnapshot) => boolean,
+): Promise<GameSnapshot> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      socket.off('game.snapshot', handler);
+      reject(new Error('timed out waiting for matching game.snapshot'));
+    }, EVENT_TIMEOUT_MS);
+
+    const handler = (payload: GameSnapshot): void => {
+      if (!predicate(payload)) {
+        return;
+      }
+
+      clearTimeout(timer);
+      socket.off('game.snapshot', handler);
+      resolve(payload);
+    };
+
+    socket.on('game.snapshot', handler);
   });
 }
 
@@ -123,6 +149,13 @@ describe('game socket', () => {
   async function joinRoom(accessToken: string, roomId: string): Promise<void> {
     await request(app!.getHttpServer())
       .post(`/rooms/${roomId}/join`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(201);
+  }
+
+  async function addBot(accessToken: string, roomId: string): Promise<void> {
+    await request(app!.getHttpServer())
+      .post(`/rooms/${roomId}/bots`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(201);
   }
@@ -216,5 +249,62 @@ describe('game socket', () => {
     const reconnectSnapshot = await waitForEvent<GameSnapshot>(reconnected, 'game.snapshot');
 
     expect(reconnectSnapshot).toEqual(startedSnapshot);
+  });
+
+  it('starts with a host and a bot, then the server plays the bot after the human turn', async () => {
+    const host = await registerAndLogin('game-bot-host');
+    const room = await createRoom(host.accessToken);
+    await addBot(host.accessToken, room.id);
+
+    const hostSocket = connectSocket(host.accessToken, room.id);
+    await waitForEvent(hostSocket, 'room.state');
+
+    const startSnapshotPromise = waitForEvent<GameSnapshot>(hostSocket, 'game.snapshot');
+    const startAck = await emitWithAck<AckResponse>(hostSocket, 'room.start');
+    expect(startAck.ok).toBe(true);
+
+    const startedSnapshot = await startSnapshotPromise;
+    expect(startedSnapshot.players).toHaveLength(2);
+    expect(startedSnapshot.players.some((player) => player.id === host.userId)).toBe(true);
+
+    const botUserId = startedSnapshot.players.find((player) => player.id !== host.userId)?.id;
+    expect(botUserId).toBeDefined();
+
+    const botMovedPromise = waitForMatchingSnapshot(hostSocket, (snapshot) => {
+      const active = snapshot.players[snapshot.activeIndex];
+      return active?.id === botUserId && (snapshot.lastRoll?.dice.length ?? 0) > 0;
+    });
+
+    let current = startedSnapshot;
+    while (current.players[current.activeIndex]?.id === host.userId && current.phase !== 'gameOver') {
+      const nextSnapshot = waitForEvent<GameSnapshot>(hostSocket, 'game.snapshot');
+      if (current.phase === 'rolling') {
+        const ack = await emitWithAck<AckResponse>(hostSocket, 'roll');
+        expect(ack.ok).toBe(true);
+      } else if (current.phase === 'build') {
+        const ack = await emitWithAck<AckResponse>(hostSocket, 'passBuild');
+        expect(ack.ok).toBe(true);
+      } else if (current.phase === 'decideReroll') {
+        const ack = await emitWithAck<AckResponse>(hostSocket, 'keepRoll');
+        expect(ack.ok).toBe(true);
+      } else if (current.phase === 'decideHarbor') {
+        const ack = await emitWithAck<AckResponse>(hostSocket, 'harborSkip');
+        expect(ack.ok).toBe(true);
+      } else if (current.phase === 'endOfTurn') {
+        const ack = await emitWithAck<AckResponse>(hostSocket, 'skip');
+        expect(ack.ok).toBe(true);
+      } else {
+        throw new Error(`unexpected phase "${current.phase}"`);
+      }
+      current = await nextSnapshot;
+    }
+
+    const botSnapshot = await botMovedPromise;
+    expect(botSnapshot.players[botSnapshot.activeIndex].id).toBe(botUserId);
+    expect(botSnapshot.lastRoll?.dice.length).toBeGreaterThan(0);
+
+    const illegalAck = await emitWithAck<AckResponse>(hostSocket, 'roll');
+    expect(illegalAck.ok).toBe(false);
+    expect(illegalAck.error).toBeDefined();
   });
 });

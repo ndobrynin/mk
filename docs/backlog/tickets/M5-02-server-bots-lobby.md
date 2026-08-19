@@ -1,7 +1,7 @@
 ---
 id: M5-02
 title: Боты в лобби и ходы на сервере
-status: todo
+status: done
 milestone: M5
 blocked_by: [M5-01, M3-02, M4-02]
 unblocks: []

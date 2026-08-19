@@ -1,12 +1,13 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import type { Prisma, Room, RoomSeat } from '@prisma/client';
-import { randomInt } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 const MIN_SEATS = 2;
@@ -18,10 +19,12 @@ const ROOM_STATUS_WAITING = 'waiting';
 const ROOM_STATUS_PLAYING = 'playing';
 const ROOM_STATUS_FINISHED = 'finished';
 const PRISMA_UNIQUE_CONSTRAINT_ERROR = 'P2002';
+const BOT_PROVIDER = 'bot';
 
 export interface RoomSeatView {
   userId: string;
   seatIndex: number;
+  isBot: boolean;
 }
 
 export interface RoomView {
@@ -37,7 +40,25 @@ export interface RoomView {
 
 type RoomWithSeats = Room & { seats: RoomSeat[] };
 
-function toRoomView(room: RoomWithSeats): RoomView {
+async function loadBotUserIds(prisma: PrismaService, userIds: string[]): Promise<Set<string>> {
+  if (userIds.length === 0) {
+    return new Set();
+  }
+
+  const identities = await prisma.identity.findMany({
+    where: { provider: BOT_PROVIDER, userId: { in: userIds } },
+    select: { userId: true },
+  });
+
+  return new Set(identities.map((row) => row.userId));
+}
+
+async function toRoomView(prisma: PrismaService, room: RoomWithSeats): Promise<RoomView> {
+  const botIds = await loadBotUserIds(
+    prisma,
+    room.seats.map((seat) => seat.userId),
+  );
+
   return {
     id: room.id,
     code: room.code,
@@ -49,7 +70,11 @@ function toRoomView(room: RoomWithSeats): RoomView {
     seats: room.seats
       .slice()
       .sort((a, b) => a.seatIndex - b.seatIndex)
-      .map((seat) => ({ userId: seat.userId, seatIndex: seat.seatIndex })),
+      .map((seat) => ({
+        userId: seat.userId,
+        seatIndex: seat.seatIndex,
+        isBot: botIds.has(seat.userId),
+      })),
   };
 }
 
@@ -73,11 +98,35 @@ function firstFreeSeatIndex(occupied: readonly number[], maxSeats: number): numb
   return undefined;
 }
 
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    (error as Prisma.PrismaClientKnownRequestError).code === PRISMA_UNIQUE_CONSTRAINT_ERROR
+  );
+}
+
+async function createBotUser(tx: Prisma.TransactionClient): Promise<{ id: string }> {
+  return tx.user.create({
+    data: {
+      identities: {
+        create: { provider: BOT_PROVIDER, providerId: randomUUID() },
+      },
+    },
+    select: { id: true },
+  });
+}
+
 @Injectable()
 export class RoomsService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async createRoom(hostUserId: string, maxSeats: unknown, isPublic: unknown): Promise<RoomView> {
+  async createRoom(
+    hostUserId: string,
+    maxSeats: unknown,
+    isPublic: unknown,
+    fillBots: unknown,
+  ): Promise<RoomView> {
     if (typeof maxSeats !== 'number' || !Number.isInteger(maxSeats)) {
       throw new BadRequestException('maxSeats must be an integer');
     }
@@ -90,31 +139,57 @@ export class RoomsService {
       throw new BadRequestException('isPublic must be a boolean');
     }
 
+    if (fillBots !== undefined && typeof fillBots !== 'boolean') {
+      throw new BadRequestException('fillBots must be a boolean');
+    }
+
+    const shouldFillBots = fillBots === true;
+
     for (let attempt = 0; attempt < CODE_GENERATION_ATTEMPTS; attempt += 1) {
       const code = generateRoomCode();
 
       try {
-        const room = await this.prisma.room.create({
-          data: {
-            code,
-            hostUserId,
-            maxSeats,
-            isPublic,
-            status: ROOM_STATUS_WAITING,
-            seats: {
-              create: { userId: hostUserId, seatIndex: 0 },
+        const room = await this.prisma.$transaction(async (tx) => {
+          const created = await tx.room.create({
+            data: {
+              code,
+              hostUserId,
+              maxSeats,
+              isPublic,
+              status: ROOM_STATUS_WAITING,
+              seats: {
+                create: { userId: hostUserId, seatIndex: 0 },
+              },
             },
-          },
-          include: { seats: true },
+            include: { seats: true },
+          });
+
+          if (!shouldFillBots) {
+            return created;
+          }
+
+          for (let seatIndex = 1; seatIndex < maxSeats; seatIndex += 1) {
+            const bot = await createBotUser(tx);
+            await tx.roomSeat.create({
+              data: { roomId: created.id, userId: bot.id, seatIndex },
+            });
+          }
+
+          const withBots = await tx.room.findUnique({
+            where: { id: created.id },
+            include: { seats: true },
+          });
+
+          if (!withBots) {
+            throw new NotFoundException('room not found');
+          }
+
+          return withBots;
         });
 
-        return toRoomView(room);
+        return toRoomView(this.prisma, room);
       } catch (error) {
-        if (
-          error instanceof Error &&
-          'code' in error &&
-          (error as Prisma.PrismaClientKnownRequestError).code === PRISMA_UNIQUE_CONSTRAINT_ERROR
-        ) {
+        if (isUniqueConstraintError(error)) {
           continue;
         }
 
@@ -132,7 +207,7 @@ export class RoomsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return rooms.map(toRoomView);
+    return Promise.all(rooms.map((room) => toRoomView(this.prisma, room)));
   }
 
   async getRoomById(roomId: string): Promise<RoomView> {
@@ -145,7 +220,7 @@ export class RoomsService {
       throw new NotFoundException('room not found');
     }
 
-    return toRoomView(room);
+    return toRoomView(this.prisma, room);
   }
 
   async joinRoomById(userId: string, roomId: string): Promise<RoomView> {
@@ -176,6 +251,49 @@ export class RoomsService {
     }
 
     return this.seatUserInRoom(userId, room);
+  }
+
+  async addBot(hostUserId: string, roomId: string): Promise<RoomView> {
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: { seats: true },
+    });
+
+    if (!room) {
+      throw new NotFoundException('room not found');
+    }
+
+    if (room.hostUserId !== hostUserId) {
+      throw new ForbiddenException('only the host can add bots');
+    }
+
+    if (room.status === ROOM_STATUS_PLAYING || room.status === ROOM_STATUS_FINISHED) {
+      throw new ConflictException('room is not accepting new players');
+    }
+
+    const occupiedIndexes = room.seats.map((seat) => seat.seatIndex);
+    const seatIndex = firstFreeSeatIndex(occupiedIndexes, room.maxSeats);
+
+    if (seatIndex === undefined) {
+      throw new ConflictException('room is full');
+    }
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        const bot = await createBotUser(tx);
+        await tx.roomSeat.create({
+          data: { roomId: room.id, userId: bot.id, seatIndex },
+        });
+      });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new ConflictException('room is full');
+      }
+
+      throw error;
+    }
+
+    return this.getRoomById(room.id);
   }
 
   async leaveRoom(userId: string, roomId: string): Promise<void> {
@@ -225,11 +343,7 @@ export class RoomsService {
         data: { roomId: room.id, userId, seatIndex },
       });
     } catch (error) {
-      if (
-        error instanceof Error &&
-        'code' in error &&
-        (error as Prisma.PrismaClientKnownRequestError).code === PRISMA_UNIQUE_CONSTRAINT_ERROR
-      ) {
+      if (isUniqueConstraintError(error)) {
         throw new ConflictException('room is full');
       }
 
@@ -245,6 +359,6 @@ export class RoomsService {
       throw new NotFoundException('room not found');
     }
 
-    return toRoomView(updated);
+    return toRoomView(this.prisma, updated);
   }
 }

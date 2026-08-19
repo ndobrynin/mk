@@ -4,6 +4,7 @@ export interface RoomSeatStateView {
   userId: string;
   seatIndex: number;
   ready: boolean;
+  isBot: boolean;
 }
 
 export interface RoomStateView {
