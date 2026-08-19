@@ -6,7 +6,7 @@
 
 ## Макет
 
-[Figma](https://www.figma.com/design/I1NOY3anFnhayDXTVwUHbw/Untitled?node-id=75-39) — актуальные экраны стола на 4, магазин, карты. Экраны локальной игры устарели, их не верстаем.
+[Figma](https://www.figma.com/design/I1NOY3anFnhayDXTVwUHbw/Untitled?node-id=75-39) — актуальные экраны: [меню](https://www.figma.com/design/I1NOY3anFnhayDXTVwUHbw/Untitled?node-id=206-10913), [регистрация локальных игроков](https://www.figma.com/design/I1NOY3anFnhayDXTVwUHbw/Untitled?node-id=206-7287), стол на 4, магазин, карты.
 
 ## Документы
 

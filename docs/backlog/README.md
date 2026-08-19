@@ -69,6 +69,12 @@ OAuth VK/Yandex — отдельные файлы тикетов после M1-0
 | [M5-01](tickets/M5-01-engine-bot-policy.md) | политика бота в engine |
 | [M5-02](tickets/M5-02-server-bots-lobby.md) | боты в лобби и ходы на сервере |
 
+## M8 — меню и локальный стол (UI)
+
+| id | title |
+| --- | --- |
+| [M8-01](tickets/M8-01-home-local-register.md) | меню и регистрация локальных игроков |
+
 ## Позже
 
 M6 VK/Яндекс · M7 таймеры. Не брать без файла тикета.

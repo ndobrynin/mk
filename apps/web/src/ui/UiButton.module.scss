@@ -1,0 +1,43 @@
+@use "../styles/abstracts" as *;
+
+.cta {
+  @include gold-cta;
+}
+
+.add {
+  @include teal-add;
+}
+
+.chip {
+  @include reset-control;
+  @include focus-ring;
+
+  width: $chip-width;
+  height: $chip-height;
+  border: 1px solid $color-chip-border;
+  border-radius: 15px;
+  background: $color-chip-bg;
+  color: $color-chip-text;
+  font-family: $font-ui;
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 28px;
+  cursor: pointer;
+}
+
+.icon {
+  @include reset-control;
+  @include focus-ring;
+
+  width: $remove-size;
+  height: $remove-size;
+  border: 0;
+  border-radius: 50%;
+  background: $color-gold;
+  color: $color-gold-ink;
+  font-family: $font-ui;
+  font-size: 22px;
+  line-height: $remove-size;
+  box-shadow: 0 3px 0 $color-gold-edge;
+  cursor: pointer;
+}

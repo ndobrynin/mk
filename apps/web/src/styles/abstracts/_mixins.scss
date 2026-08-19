@@ -1,0 +1,76 @@
+@use "tokens" as *;
+
+@mixin reset-control {
+  appearance: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-synthesis: none;
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 3px solid $color-white;
+    outline-offset: 4px;
+  }
+}
+
+@mixin display-type($stroke: 4px) {
+  color: $color-white;
+  font-family: $font-display;
+  font-weight: 400;
+  font-style: normal;
+  -webkit-text-stroke: $stroke $color-stroke;
+  paint-order: stroke fill;
+  text-align: center;
+}
+
+@mixin gold-cta {
+  @include reset-control;
+  @include focus-ring;
+  width: $cta-width;
+  height: $cta-height;
+  border: 0;
+  border-radius: $cta-radius;
+  background: linear-gradient(180deg, $color-gold-hi 0%, $color-gold 48%, $color-gold-lo 100%);
+  color: $color-white;
+  font-family: $font-display;
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 49px;
+  text-align: center;
+  text-shadow: 0 3px 0 rgb(166 90 12 / 45%);
+  box-shadow:
+    0 10px 0 $color-gold-edge,
+    2px 12px 16px rgb(136 88 24 / 28%);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@mixin teal-add {
+  @include reset-control;
+  @include focus-ring;
+  width: $add-width;
+  height: $add-height;
+  border: 3.6px solid $color-teal-edge;
+  border-radius: 12px;
+  background: $color-teal;
+  color: $color-white;
+  font-family: $font-display;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 22px;
+  text-align: center;
+  box-shadow:
+    2px 2px 10px rgb(136 88 24 / 25%),
+    inset 0 0 2px 4px rgb(0 0 0 / 20%);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}

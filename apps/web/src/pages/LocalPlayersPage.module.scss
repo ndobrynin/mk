@@ -1,0 +1,44 @@
+.menu {
+  position: absolute;
+  top: 40px;
+  left: 28px;
+  z-index: 2;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 140px;
+}
+
+.title {
+  width: 739px;
+}
+
+.form {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.registered {
+  margin: 3.5rem 0 1.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 100px;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.start {
+  margin-top: 48px;
+}
