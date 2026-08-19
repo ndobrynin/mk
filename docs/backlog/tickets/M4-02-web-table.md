@@ -1,7 +1,7 @@
 ---
 id: M4-02
 title: Стол, магазин и партия по сокету
-status: todo
+status: done
 milestone: M4
 blocked_by: [M4-01, M3-02]
 unblocks: []
