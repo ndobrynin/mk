@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, type OnModuleDestroy } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,7 +8,9 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import type { GameState } from '@kidagrad/engine';
 import jwt from 'jsonwebtoken';
+import { randomInt } from 'node:crypto';
 import type { Server, Socket } from 'socket.io';
 import { GameService } from './game.service.js';
 import { parseGameCommand, type CommandResult } from './game.types.js';
@@ -60,11 +62,12 @@ function verifyAccessToken(token: string): string | undefined {
 }
 
 @WebSocketGateway()
-export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy {
   @WebSocketServer()
   private readonly server!: Server;
 
   private readonly sessions = new Map<string, GameSession>();
+  private readonly botTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor(@Inject(GameService) private readonly gameService: GameService) {}
 
@@ -108,6 +111,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.sessions.delete(client.id);
   }
 
+  onModuleDestroy(): void {
+    for (const timer of this.botTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.botTimers.clear();
+  }
+
   private requireSession(client: Socket): GameSession {
     const session = this.sessions.get(client.id);
 
@@ -141,6 +151,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const { room, state } = await this.gameService.startGame(roomId, userId);
       this.server.to(roomId).emit('room.state', room);
       this.server.to(roomId).emit('game.snapshot', state);
+      void this.queueBotMoves(roomId, state);
       return { ok: true };
     } catch (error) {
       return { ok: false, error: error instanceof Error ? error.message : 'start failed' };
@@ -261,8 +272,68 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (result.state?.phase === 'gameOver') {
       this.server.to(session.roomId).emit('game.over', { winnerId: result.state.winnerId });
+    } else if (result.state) {
+      void this.queueBotMoves(session.roomId, result.state);
     }
 
     return { ok: true };
+  }
+
+  private botMoveDelayMs(): number {
+    const raw = process.env.BOT_MOVE_DELAY_MS;
+    if (raw !== undefined && raw !== '') {
+      const parsed = Number(raw);
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        return parsed;
+      }
+    }
+
+    return 800 + randomInt(701);
+  }
+
+  private async queueBotMoves(roomId: string, state: GameState): Promise<void> {
+    if (!(await this.gameService.isActiveSeatBot(state))) {
+      return;
+    }
+
+    this.scheduleBotTurn(roomId);
+  }
+
+  private scheduleBotTurn(roomId: string): void {
+    const existing = this.botTimers.get(roomId);
+    if (existing !== undefined) {
+      clearTimeout(existing);
+    }
+
+    const timer = setTimeout(() => {
+      void this.runBotTurn(roomId);
+    }, this.botMoveDelayMs());
+
+    this.botTimers.set(roomId, timer);
+  }
+
+  private async runBotTurn(roomId: string): Promise<void> {
+    this.botTimers.delete(roomId);
+
+    try {
+      const result = await this.gameService.playBotTurnIfActive(roomId);
+      if (!result?.ok || !result.state) {
+        return;
+      }
+
+      this.server.to(roomId).emit('game.snapshot', result.state);
+      this.server.to(roomId).emit('game.events', result.events ?? []);
+
+      if (result.state.phase === 'gameOver') {
+        this.server.to(roomId).emit('game.over', { winnerId: result.state.winnerId });
+        return;
+      }
+
+      if (await this.gameService.isActiveSeatBot(result.state)) {
+        this.scheduleBotTurn(roomId);
+      }
+    } catch {
+      return;
+    }
   }
 }

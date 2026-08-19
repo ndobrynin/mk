@@ -9,6 +9,7 @@ interface RequestWithUser {
 interface CreateRoomBody {
   maxSeats: unknown;
   isPublic: unknown;
+  fillBots?: unknown;
 }
 
 interface JoinByCodeBody {
@@ -25,7 +26,7 @@ export class RoomsController {
     @Req() req: RequestWithUser,
     @Body() body: CreateRoomBody,
   ): Promise<RoomView> {
-    return this.roomsService.createRoom(req.user.id, body?.maxSeats, body?.isPublic);
+    return this.roomsService.createRoom(req.user.id, body?.maxSeats, body?.isPublic, body?.fillBots);
   }
 
   @Get()
@@ -55,5 +56,10 @@ export class RoomsController {
   async leaveRoom(@Req() req: RequestWithUser, @Param('id') id: string): Promise<{ ok: true }> {
     await this.roomsService.leaveRoom(req.user.id, id);
     return { ok: true };
+  }
+
+  @Post(':id/bots')
+  addBot(@Req() req: RequestWithUser, @Param('id') id: string): Promise<RoomView> {
+    return this.roomsService.addBot(req.user.id, id);
   }
 }

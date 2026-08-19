@@ -1,6 +1,6 @@
 import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Room, RoomSeat } from '@prisma/client';
-import { apply, setup, type Command, type GameState, type Rng } from '@kidagrad/engine';
+import { apply, chooseBotCommand, setup, type Command, type GameState, type Rng } from '@kidagrad/engine';
 import { randomInt } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
@@ -10,6 +10,7 @@ const ROOM_STATUS_WAITING = 'waiting';
 const ROOM_STATUS_PLAYING = 'playing';
 const ROOM_STATUS_FINISHED = 'finished';
 const MIN_SEATS_TO_START = 2;
+const BOT_PROVIDER = 'bot';
 
 type RoomWithSeats = Room & { seats: RoomSeat[] };
 
@@ -72,6 +73,7 @@ export class GameService {
   async buildRoomStateView(room: RoomWithSeats): Promise<RoomStateView> {
     const readyUserIds = await this.redis.client.smembers(readyKey(room.id));
     const readySet = new Set(readyUserIds);
+    const botIds = await this.botUserIdSet(room.seats.map((seat) => seat.userId));
 
     return {
       id: room.id,
@@ -86,7 +88,8 @@ export class GameService {
         .map((seat) => ({
           userId: seat.userId,
           seatIndex: seat.seatIndex,
-          ready: readySet.has(seat.userId),
+          ready: botIds.has(seat.userId) || readySet.has(seat.userId),
+          isBot: botIds.has(seat.userId),
         })),
     };
   }
@@ -173,4 +176,61 @@ export class GameService {
 
     return { ok: true, state: result.state, events: result.events };
   }
+
+  async isActiveSeatBot(state: GameState): Promise<boolean> {
+    if (state.phase === 'gameOver') {
+      return false;
+    }
+
+    const activeId = activePlayerId(state);
+    if (!activeId) {
+      return false;
+    }
+
+    return this.isBotUser(activeId);
+  }
+
+  async playBotTurnIfActive(roomId: string): Promise<ApplyCommandResult | undefined> {
+    const state = await this.getSnapshot(roomId);
+
+    if (!state || state.phase === 'gameOver') {
+      return undefined;
+    }
+
+    const activeId = activePlayerId(state);
+    if (!activeId || !(await this.isBotUser(activeId))) {
+      return undefined;
+    }
+
+    const command = chooseBotCommand(state, activeId);
+    return this.applyCommand(roomId, activeId, command);
+  }
+
+  private async isBotUser(userId: string): Promise<boolean> {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, provider: BOT_PROVIDER },
+      select: { id: true },
+    });
+
+    return identity !== null;
+  }
+
+  private async botUserIdSet(userIds: string[]): Promise<Set<string>> {
+    if (userIds.length === 0) {
+      return new Set();
+    }
+
+    const identities = await this.prisma.identity.findMany({
+      where: { provider: BOT_PROVIDER, userId: { in: userIds } },
+      select: { userId: true },
+    });
+
+    return new Set(identities.map((row) => row.userId));
+  }
+}
+
+function activePlayerId(state: GameState): string | undefined {
+  const players = state.players as Array<{ id: string }>;
+  const activePlayer = players[state.activeIndex ?? 0];
+  return activePlayer?.id;
 }

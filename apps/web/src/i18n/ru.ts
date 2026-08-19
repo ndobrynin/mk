@@ -21,6 +21,7 @@ export const ru = {
     createTitle: "Создать комнату",
     maxSeatsLabel: "Число мест",
     isPublicLabel: "Публичная комната",
+    fillBotsLabel: "Заполнить ботами",
     createSubmit: "Создать",
     joinByCodeTitle: "Войти по коду",
     codeLabel: "Код комнаты",
@@ -41,6 +42,8 @@ export const ru = {
     notReadyButton: "Не готов",
     startButton: "Начать партию",
     actionError: "Не удалось выполнить действие",
+    addBotButton: "Добавить бота",
+    botBadge: "бот",
   },
   table: {
     roomCodeLabel: "Комната",

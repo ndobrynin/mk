@@ -54,8 +54,8 @@ function makeRoom(overrides: Partial<RoomView> = {}): RoomView {
     status: "waiting",
     createdAt: new Date().toISOString(),
     seats: [
-      { userId: "user-1", seatIndex: 0 },
-      { userId: "user-2", seatIndex: 1 },
+      { userId: "user-1", seatIndex: 0, isBot: false },
+      { userId: "user-2", seatIndex: 1, isBot: false },
     ],
     ...overrides,
   };
@@ -156,5 +156,32 @@ describe("RoomLobbyPage", () => {
     await waitFor(() => {
       expect(screen.getByText("table")).toBeInTheDocument();
     });
+  });
+
+  it("lets the host add a bot and shows the bot badge", async () => {
+    const room = makeRoom();
+    const withBot = makeRoom({
+      seats: [
+        { userId: "user-1", seatIndex: 0, isBot: false },
+        { userId: "bot-1", seatIndex: 1, isBot: true },
+      ],
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(room))
+      .mockResolvedValueOnce(jsonResponse(withBot));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderLobby();
+
+    await screen.findByRole("heading", { name: ru.lobby.title });
+
+    await userEvent.click(screen.getByRole("button", { name: ru.lobby.addBotButton }));
+
+    expect(await screen.findByText(`bot-1 (${ru.lobby.botBadge})`)).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/rooms/room-1/bots"),
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 });

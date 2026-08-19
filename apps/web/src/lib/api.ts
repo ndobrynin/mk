@@ -15,6 +15,7 @@ export interface RegisteredUser extends TokenPair {
 export interface RoomSeatView {
   userId: string;
   seatIndex: number;
+  isBot?: boolean;
 }
 
 export interface RoomView {
@@ -82,11 +83,11 @@ export function listRooms(): Promise<RoomView[]> {
   return request<RoomView[]>("/rooms", { headers: authHeaders() });
 }
 
-export function createRoom(maxSeats: number, isPublic: boolean): Promise<RoomView> {
+export function createRoom(maxSeats: number, isPublic: boolean, fillBots = false): Promise<RoomView> {
   return request<RoomView>("/rooms", {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ maxSeats, isPublic }),
+    body: JSON.stringify({ maxSeats, isPublic, fillBots }),
   });
 }
 
@@ -104,6 +105,13 @@ export function getRoom(roomId: string): Promise<RoomView> {
 
 export function leaveRoom(roomId: string): Promise<{ ok: true }> {
   return request<{ ok: true }>(`/rooms/${roomId}/leave`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+}
+
+export function addBot(roomId: string): Promise<RoomView> {
+  return request<RoomView>(`/rooms/${roomId}/bots`, {
     method: "POST",
     headers: authHeaders(),
   });

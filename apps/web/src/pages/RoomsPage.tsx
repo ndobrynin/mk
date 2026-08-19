@@ -11,6 +11,7 @@ export function RoomsPage(): ReactElement {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [maxSeats, setMaxSeats] = useState<number>(SEAT_OPTIONS[0]);
   const [isPublic, setIsPublic] = useState(true);
+  const [fillBots, setFillBots] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export function RoomsPage(): ReactElement {
     setCreateError(null);
 
     try {
-      const room = await createRoom(maxSeats, isPublic);
+      const room = await createRoom(maxSeats, isPublic, fillBots);
       navigate(`/rooms/${room.id}`);
     } catch {
       setCreateError(ru.auth.genericError);
@@ -101,6 +102,15 @@ export function RoomsPage(): ReactElement {
               onChange={(event) => setIsPublic(event.target.checked)}
             />
             {ru.rooms.isPublicLabel}
+          </label>
+          <label htmlFor="fill-bots">
+            <input
+              id="fill-bots"
+              type="checkbox"
+              checked={fillBots}
+              onChange={(event) => setFillBots(event.target.checked)}
+            />
+            {ru.rooms.fillBotsLabel}
           </label>
           <button type="submit">{ru.rooms.createSubmit}</button>
         </form>
