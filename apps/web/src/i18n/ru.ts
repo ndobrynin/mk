@@ -3,6 +3,16 @@ export const ru = {
     appName: "Кидаград",
     loading: "Загрузка…",
   },
+  home: {
+    localPlay: "Локальная игра",
+    networkPlay: "Сетевая игра",
+  },
+  localPlayers: {
+    menu: "Меню",
+    title: "Регистрация игроков",
+    namePlaceholder: "Имя",
+    add: "Добавить",
+  },
   auth: {
     loginTitle: "Вход в Кидаград",
     registerTitle: "Регистрация в Кидаграде",
