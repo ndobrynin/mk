@@ -58,7 +58,7 @@ export function HomePage(): ReactElement {
         style={cityBgStyle}
       />
       <h1 className="menu-title" style={titleStyle}>
-        {ru.common.appName}
+        {ru.home.logo}
       </h1>
       <div style={buttonsStyle}>
         <button type="button" className="menu-cta" onClick={() => navigate("/local")}>

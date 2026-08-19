@@ -25,6 +25,21 @@ describe("LocalPlayersPage", () => {
     await userEvent.click(screen.getByRole("button", { name: ru.localPlayers.add }));
 
     expect(screen.getByText("Никита")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: ru.localPlayers.registered })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Бизнес Кот|Онигири|Робот Фугу|Радуга/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: `${ru.localPlayers.remove}: Никита` })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ru.localPlayers.start })).toBeDisabled();
+  });
+
+  it("removes a registered player", async () => {
+    renderLocalApp();
+
+    await userEvent.type(screen.getByLabelText(ru.localPlayers.namePlaceholder), "Никита");
+    await userEvent.click(screen.getByRole("button", { name: ru.localPlayers.add }));
+    await userEvent.click(screen.getByRole("button", { name: `${ru.localPlayers.remove}: Никита` }));
+
+    expect(screen.queryByText("Никита")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: ru.localPlayers.registered })).not.toBeInTheDocument();
   });
 
   it("returns to the home menu from the menu button", async () => {
@@ -55,5 +70,9 @@ describe("LocalPlayersPage", () => {
     expect(screen.getByText("Вика")).toBeInTheDocument();
     expect(screen.getByText("Гена")).toBeInTheDocument();
     expect(screen.queryByText("Лишний")).not.toBeInTheDocument();
+
+    const avatars = screen.getAllByRole("img", { name: /Бизнес Кот|Онигири|Робот Фугу|Радуга/ });
+    expect(avatars).toHaveLength(4);
+    expect(new Set(avatars.map((node) => node.getAttribute("aria-label"))).size).toBe(4);
   });
 });

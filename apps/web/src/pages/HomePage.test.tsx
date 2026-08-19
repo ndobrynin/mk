@@ -21,6 +21,7 @@ describe("HomePage", () => {
   it("shows local and network play buttons and keeps network unavailable", async () => {
     renderHomeApp();
 
+    expect(screen.getByRole("heading", { name: ru.home.logo })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: ru.home.localPlay })).toBeInTheDocument();
     const networkButton = screen.getByRole("button", { name: ru.home.networkPlay });
     expect(networkButton).toBeDisabled();

@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type FormEvent, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { ru } from "../i18n/ru";
+import { avatarById, pickAvatarId } from "../ui/local-avatars";
 import "../ui/menu.css";
 
 const MAX_PLAYERS = 4;
@@ -8,6 +9,12 @@ const CITY_BG_WIDTH = 1921;
 const CITY_BG_HEIGHT = 1082;
 const STADIUM_WIDTH = 1760;
 const STADIUM_HEIGHT = 1242;
+
+interface LocalPlayer {
+  id: string;
+  name: string;
+  avatarId: string;
+}
 
 const screenStyle: CSSProperties = {
   position: "relative",
@@ -66,26 +73,14 @@ const formStyle: CSSProperties = {
   alignItems: "center",
 };
 
-const listStyle: CSSProperties = {
-  listStyle: "none",
-  margin: "6rem 0 0",
-  padding: 0,
-  display: "flex",
-  gap: "4rem",
-  justifyContent: "center",
-  flexWrap: "wrap",
-  maxWidth: "60rem",
-  color: "#fff",
-  fontFamily: '"Banana Brick", sans-serif',
-  fontSize: "1.5rem",
-  fontWeight: 400,
-  textAlign: "center",
+const startStyle: CSSProperties = {
+  marginTop: 48,
 };
 
 export function LocalPlayersPage(): ReactElement {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<LocalPlayer[]>([]);
   const atCapacity = players.length >= MAX_PLAYERS;
 
   function handleAdd(event: FormEvent<HTMLFormElement>): void {
@@ -94,8 +89,19 @@ export function LocalPlayersPage(): ReactElement {
     if (!trimmed || atCapacity) {
       return;
     }
-    setPlayers((current) => [...current, trimmed]);
+    setPlayers((current) => [
+      ...current,
+      {
+        id: `${trimmed}-${current.length}-${Date.now()}`,
+        name: trimmed,
+        avatarId: pickAvatarId(current.map((player) => player.avatarId)),
+      },
+    ]);
     setName("");
+  }
+
+  function handleRemove(id: string): void {
+    setPlayers((current) => current.filter((player) => player.id !== id));
   }
 
   return (
@@ -134,11 +140,42 @@ export function LocalPlayersPage(): ReactElement {
             {ru.localPlayers.add}
           </button>
         </form>
-        <ul style={listStyle}>
-          {players.map((player, index) => (
-            <li key={`${player}-${index}`}>{player}</li>
-          ))}
-        </ul>
+        {players.length > 0 ? (
+          <>
+            <h2 className="menu-registered">{ru.localPlayers.registered}</h2>
+            <ul className="player-row">
+              {players.map((player) => {
+                const avatar = avatarById(player.avatarId);
+                return (
+                  <li key={player.id} className="player-card">
+                    <p className="player-name">{player.name}</p>
+                    <div className="player-avatar">
+                      <span
+                        className="player-avatar-fallback"
+                        role="img"
+                        style={{ background: avatar.background }}
+                        aria-label={avatar.label}
+                      >
+                        {avatar.glyph}
+                      </span>
+                      <button
+                        type="button"
+                        className="player-remove"
+                        aria-label={`${ru.localPlayers.remove}: ${player.name}`}
+                        onClick={() => handleRemove(player.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : null}
+        <button type="button" className="menu-cta" style={startStyle} disabled aria-disabled="true">
+          {ru.localPlayers.start}
+        </button>
       </div>
     </main>
   );
