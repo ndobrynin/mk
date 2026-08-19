@@ -1,0 +1,29 @@
+@use "../styles/abstracts" as *;
+
+.screen {
+  position: relative;
+  width: 100%;
+  min-width: $frame-min-width;
+  min-height: 100vh;
+  overflow: hidden;
+  background: $color-ink;
+}
+
+.city {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stadium {
+  position: absolute;
+  top: -8.087%;
+  left: 4.166%;
+  z-index: 1;
+  width: 91.667%;
+  height: 114.787%;
+  pointer-events: none;
+}

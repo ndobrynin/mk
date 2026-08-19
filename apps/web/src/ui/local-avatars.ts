@@ -1,18 +1,17 @@
 export interface Avatar {
-  id: string;
+  id: "cat" | "onigiri" | "fugu" | "girl";
   label: string;
   glyph: string;
-  background: string;
 }
 
 export const LOCAL_AVATARS: readonly Avatar[] = [
-  { id: "cat", label: "Бизнес Кот", glyph: "🐱", background: "#f4c27a" },
-  { id: "onigiri", label: "Онигири", glyph: "🍙", background: "#d7c4f0" },
-  { id: "fugu", label: "Робот Фугу", glyph: "🐡", background: "#9fd7c4" },
-  { id: "girl", label: "Радуга", glyph: "👧", background: "#f5b4d2" },
+  { id: "cat", label: "Бизнес Кот", glyph: "🐱" },
+  { id: "onigiri", label: "Онигири", glyph: "🍙" },
+  { id: "fugu", label: "Робот Фугу", glyph: "🐡" },
+  { id: "girl", label: "Радуга", glyph: "👧" },
 ];
 
-export function pickAvatarId(taken: readonly string[]): string {
+export function pickAvatarId(taken: readonly string[]): Avatar["id"] {
   const free = LOCAL_AVATARS.filter((avatar) => !taken.includes(avatar.id));
   const pool = free.length > 0 ? free : LOCAL_AVATARS;
   const index = Math.floor(Math.random() * pool.length);

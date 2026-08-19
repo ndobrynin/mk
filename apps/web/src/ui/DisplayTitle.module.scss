@@ -1,0 +1,26 @@
+@use "../styles/abstracts" as *;
+
+.logo {
+  @include display-type(12px);
+
+  margin: 0;
+  font-size: clamp(4.5rem, 8.7vw, 10.4rem);
+  line-height: 0.95;
+  text-shadow: 0 10px 0 $color-stroke-deep;
+}
+
+.heading {
+  @include display-type(4px);
+
+  margin: 0;
+  font-size: 56px;
+  line-height: 50px;
+}
+
+.section {
+  @include display-type(4px);
+
+  margin: 0;
+  font-size: 40px;
+  line-height: 53px;
+}

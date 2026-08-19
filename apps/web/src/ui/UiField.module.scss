@@ -1,0 +1,19 @@
+@use "../styles/abstracts" as *;
+
+.field {
+  width: $field-width;
+  height: $add-height;
+  padding: 0 20px;
+  border: 3.6px solid $color-teal-edge;
+  border-radius: 12px;
+  background: $color-white;
+  color: $color-ink;
+  font-family: $font-ui;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 22px;
+
+  &::placeholder {
+    color: $color-muted;
+  }
+}

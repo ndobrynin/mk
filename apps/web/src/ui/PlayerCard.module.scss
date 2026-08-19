@@ -1,0 +1,59 @@
+@use "../styles/abstracts" as *;
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: $avatar-size;
+}
+
+.name {
+  min-height: 44px;
+  margin: 0 0 12px;
+  color: $color-white;
+  font-family: $font-ui;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 22px;
+  text-align: center;
+}
+
+.avatar {
+  position: relative;
+  width: $avatar-size;
+  height: $avatar-size;
+}
+
+.face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $avatar-size;
+  height: $avatar-size;
+  border-radius: 50%;
+  font-size: 72px;
+  line-height: 1;
+
+  &[data-avatar="cat"] {
+    background: $avatar-cat;
+  }
+
+  &[data-avatar="onigiri"] {
+    background: $avatar-onigiri;
+  }
+
+  &[data-avatar="fugu"] {
+    background: $avatar-fugu;
+  }
+
+  &[data-avatar="girl"] {
+    background: $avatar-girl;
+  }
+}
+
+.remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
